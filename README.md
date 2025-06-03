@@ -1,70 +1,147 @@
-# Getting Started with Create React App
+# Chat Application
 
-This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
+A real-time chat application with user authentication, friend management, and private messaging functionality.
 
-## Available Scripts
+## Features
 
-In the project directory, you can run:
+- User registration and authentication
+- Friend management (add friends, accept friend requests)
+- Real-time private messaging
+- Modern and responsive UI using Chakra UI
+- Secure authentication using JWT and Supabase
+- Supabase PostgreSQL database
+- Socket.IO for real-time communication
 
-### `npm start`
+## Prerequisites
 
-Runs the app in the development mode.\
-Open [http://localhost:3000](http://localhost:3000) to view it in your browser.
+- Node.js (v14 or higher)
+- Supabase account (free tier available)
+- npm or yarn package manager
 
-The page will reload when you make changes.\
-You may also see any lint errors in the console.
+## Installation
 
-### `npm test`
+1. Clone the repository:
+```bash
+git clone <repository-url>
+cd <repository-name>
+```
 
-Launches the test runner in the interactive watch mode.\
-See the section about [running tests](https://facebook.github.io/create-react-app/docs/running-tests) for more information.
+2. Install frontend dependencies:
+```bash
+npm install
+```
 
-### `npm run build`
+3. Install backend dependencies:
+```bash
+cd server
+npm install
+```
 
-Builds the app for production to the `build` folder.\
-It correctly bundles React in production mode and optimizes the build for the best performance.
+4. Set up Supabase:
+   - Create a new project at https://supabase.com
+   - Create the following tables in your Supabase database:
+     ```sql
+     -- Users table
+     create table public.users (
+       id uuid references auth.users not null primary key,
+       username text not null unique,
+       email text not null unique,
+       created_at timestamp with time zone default timezone('utc'::text, now()) not null
+     );
 
-The build is minified and the filenames include the hashes.\
-Your app is ready to be deployed!
+     -- Friends table
+     create table public.friends (
+       id uuid default uuid_generate_v4() primary key,
+       user_id uuid references public.users not null,
+       friend_id uuid references public.users not null,
+       created_at timestamp with time zone default timezone('utc'::text, now()) not null,
+       unique(user_id, friend_id)
+     );
 
-See the section about [deployment](https://facebook.github.io/create-react-app/docs/deployment) for more information.
+     -- Friend requests table
+     create table public.friend_requests (
+       id uuid default uuid_generate_v4() primary key,
+       sender_id uuid references public.users not null,
+       receiver_id uuid references public.users not null,
+       created_at timestamp with time zone default timezone('utc'::text, now()) not null,
+       unique(sender_id, receiver_id)
+     );
 
-### `npm run eject`
+     -- Messages table
+     create table public.messages (
+       id uuid default uuid_generate_v4() primary key,
+       sender_id uuid references public.users not null,
+       receiver_id uuid references public.users not null,
+       content text not null,
+       read boolean default false,
+       created_at timestamp with time zone default timezone('utc'::text, now()) not null
+     );
+     ```
 
-**Note: this is a one-way operation. Once you `eject`, you can't go back!**
+5. Create a `.env` file in the server directory with the following content:
+```
+PORT=4000
+JWT_SECRET=your_jwt_secret_key_here
+SUPABASE_URL=your_supabase_project_url
+SUPABASE_ANON_KEY=your_supabase_anon_key
+```
 
-If you aren't satisfied with the build tool and configuration choices, you can `eject` at any time. This command will remove the single build dependency from your project.
+## Running the Application
 
-Instead, it will copy all the configuration files and the transitive dependencies (webpack, Babel, ESLint, etc) right into your project so you have full control over them. All of the commands except `eject` will still work, but they will point to the copied scripts so you can tweak them. At this point you're on your own.
+1. Start the backend server:
+```bash
+cd server
+npm run dev
+```
 
-You don't have to ever use `eject`. The curated feature set is suitable for small and middle deployments, and you shouldn't feel obligated to use this feature. However we understand that this tool wouldn't be useful if you couldn't customize it when you are ready for it.
+2. In a new terminal, start the frontend development server:
+```bash
+cd ..  # Go back to the root directory
+npm start
+```
 
-## Learn More
+The frontend application will be available at `http://localhost:3000`
+The backend server will be running at `http://localhost:4000`
 
-You can learn more in the [Create React App documentation](https://facebook.github.io/create-react-app/docs/getting-started).
+## Usage
 
-To learn React, check out the [React documentation](https://reactjs.org/).
+1. Register a new account or login with existing credentials
+2. Search for other users and send friend requests
+3. Accept friend requests to start chatting
+4. Click on a friend in the friends list to start a conversation
+5. Messages are delivered in real-time
 
-### Code Splitting
+## Technologies Used
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/code-splitting](https://facebook.github.io/create-react-app/docs/code-splitting)
+- Frontend:
+  - React
+  - Chakra UI
+  - Socket.IO Client
+  - Axios
+  - React Router
 
-### Analyzing the Bundle Size
+- Backend:
+  - Node.js
+  - Express
+  - Supabase (PostgreSQL)
+  - Socket.IO
+  - JSON Web Tokens
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/analyzing-the-bundle-size](https://facebook.github.io/create-react-app/docs/analyzing-the-bundle-size)
+## Security Features
 
-### Making a Progressive Web App
+- Secure authentication with Supabase Auth
+- JWT-based API authentication
+- Protected API routes
+- Secure WebSocket connections
+- Row Level Security in Supabase
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/making-a-progressive-web-app](https://facebook.github.io/create-react-app/docs/making-a-progressive-web-app)
+## Contributing
 
-### Advanced Configuration
+1. Fork the repository
+2. Create a new branch
+3. Make your changes
+4. Submit a pull request
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/advanced-configuration](https://facebook.github.io/create-react-app/docs/advanced-configuration)
+## License
 
-### Deployment
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/deployment](https://facebook.github.io/create-react-app/docs/deployment)
-
-### `npm run build` fails to minify
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify](https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify)
+This project is licensed under the MIT License.
